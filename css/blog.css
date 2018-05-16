@@ -1,0 +1,52 @@
+div.blog {
+	border-left: 1px groove #ccc;
+	padding-left: 1px;
+	width: 100%;
+	float: right;
+	color: white;
+	font-size: 14px;
+	/* margin-left: 50px; */
+}
+div.blogtitle {
+	padding: 3px;
+	margin-left: 2.1em;
+	background-color: #444;
+	font-size: 20px;
+}
+div.blogtitle a {
+	text-decoration: none !important;
+}
+div.blogcontent{
+	padding: 3px;
+	float: left;
+	width: 45px;
+	color: white;
+	height: 5em;
+}
+div.cal-icon {
+	text-align: center;
+	width: 40px;
+	float: left;
+}
+div.blogcontent div.blogingress {
+	/* font-size: 14px; */
+	color: white !important;
+	float: left;
+	width: 94%;
+	padding-left: 5px;
+	padding-top: 5px;
+	margin-left: 5px;
+	height: 5em;
+}
+div.blogbody {
+	background-color: #222;
+	font-size: 14px;
+	float: left;
+	padding-bottom: 10px;
+	padding-top: 10px;
+	margin-left: 3.5em;
+	padding-left: 5px;
+	/* color: white !important; */
+	width: 94%;
+}
+

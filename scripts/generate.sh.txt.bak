@@ -1,0 +1,210 @@
+#!/bin/env zsh
+
+# Version 0.3
+
+# Script to generate static html files from input
+# Includes
+# - Header
+# - Body
+# - Footer
+
+OUTPUT=${HOME}/www/html
+HEADER=${HOME}/www/text/a/header.tpl
+FOOTER=${HOME}/www/text/a/footer.tpl
+BLOG_TPL=${HOME}/www/text/a/blog.tpl
+BLOG_IDX_TPL=${HOME}/www/text/a/blog_index.tpl
+TODAY=$( date "+%Y-%m-%d - %T" )
+root_dir=${HOME}/www/text
+
+builtin cd ${root_dir}
+
+function header() {
+
+	if [[ $( grep title ${1} | head -2) ]]; then
+		title=$( cat ${1} | head -2 | grep title | cut -d= -f2 )
+		NEW_HEADER=$( cat ${HEADER} | sed -e "s,#title,${title}," )
+	else
+		NEW_HEADER=$( cat ${HEADER} )
+	fi
+	echo ${NEW_HEADER} > ${OUTPUT}/${1%.*}.html
+
+}
+
+function footer() {
+
+	NEW_FOOTER=$( cat ${FOOTER} | sed -e "s,#updated,${TODAY}," )
+	echo ${NEW_FOOTER} >> ${OUTPUT}/${1%.*}.html
+
+}
+
+function url() {
+
+	cat ${OUTPUT}/${1%.*}.html | sed "s|\.\ |\.\\r\\n|g" | grep -P '(?=.*?#url)' |\
+		while read url
+		do
+			get_url=$( echo ${url} | grep url | cut -d# -f2-)
+			#echo "GET_URL: ${get_url}"
+			url_link=$( echo ${get_url} | cut -d' ' -f2- )
+			#echo "URL_LINK: ${url_link}"
+			url_dest=$( echo ${url_link} | cut -dÅ -f1 | cut -dÅ -f1- )
+			#echo "URL_DEST: ${url_dest}"
+			url_txt=$( echo ${url_link} | cut -dÅ -f2 | cut -dÅ -f1- )
+			#echo "URL_TXT: ${url_txt}"
+			echo ${url_link} |\
+				sed -i -- 's|'${url_dest}'|<a href=\"'${url_dest}'\">|' ${OUTPUT}/${1%.*}.html
+				sed -i -- 's|'${url_txt}'|'${url_txt}'<\/a>|' ${OUTPUT}/${1%.*}.html
+				sed -i -- "s|\#url\ ||" ${OUTPUT}/${1%.*}.html
+				sed -i -- "s|Å||" ${OUTPUT}/${1%.*}.html
+				sed -i -- "s|Å||" ${OUTPUT}/${1%.*}.html
+		done
+
+}
+
+function img() {
+
+	cat ${OUTPUT}/${1%.*}.html | grep -Po '(?=.*?#showimg)' |\
+		while read img
+		do
+			get_img=$( echo ${img} | cut -d# -f2-)
+			img_link=$( echo ${get_img} | cut -d' ' -f2- | sed -e "s|\#img\ ||" )
+			image=$( echo ${img_link} | cut -dÅ -f1 | cut -dÅ -f1- )
+			alt=$( echo ${img_link} | cut -dÅ -f2- | cut -dÅ -f1- )
+			echo ${img_link} |\
+				sed -i -- "s|${image}|<img\ src=\"\/images\/${image}\"|" ${OUTPUT}/${1%.*}.html
+				sed -i -- "s|${alt}|\ alt=\"${alt}\"\ width=\"500\"\ \/>|" ${OUTPUT}/${1%.*}.html
+				sed -i -- "s|\#showimg\ ||" ${OUTPUT}/${1%.*}.html
+				sed -i -- "s|Å||" ${OUTPUT}/${1%.*}.html
+				sed -i -- "s|Å||" ${OUTPUT}/${1%.*}.html
+		done
+}
+
+function html() {
+
+	sed -i -- "s|\#BR|<br\ />\\r\\n|g" ${OUTPUT}/${1%.*}.html
+	sed -i -- "s|\#EP|</p>|g" ${OUTPUT}/${1%.*}.html
+	sed -i -- "s|\#P|<p>|g" ${OUTPUT}/${1%.*}.html
+	sed -i -- "s|\#Q|<blockquote>|g" ${OUTPUT}/${1%.*}.html
+	sed -i -- "s|\#EQ|</blockquote>|g" ${OUTPUT}/${1%.*}.html
+	sed -i -- "s|\#STRONG|</strong>|g" ${OUTPUT}/${1%.*}.html
+	sed -i -- "s|\#ESTRONG|</strong>|g" ${OUTPUT}/${1%.*}.html
+
+}
+
+function make_blog() {
+
+	ls -har blog/*blog |\
+		while read blog
+		do
+			aday=$( cat ${blog} | grep DATE | cut -d- -f1 )
+			year=$( cat ${blog} | grep DATE | cut -d- -f2 )
+			month=$( cat ${blog} | grep DATE | cut -d- -f3 )
+			nday=$( cat ${blog} | grep DATE | cut -d- -f4 )
+			btitle=$( cat ${blog} | grep BLOG_TITLE | cut -d' ' -f2- )
+			#ingress=$( cat ${blog} | grep INGRESS | cut -d' ' -f2- )
+			ingress=$( cat ${blog} | xargs -0 | sed -e 's/[^^]/[&]/g; s/\^/\\^/g; $!a\'$'\n''\\n' | grep -Po "#INGRESS_START\K(.*?)#INGRESS_STOP" | sed "s|\ \#INGRESS_STOP||" | sed "s|^\ ||" )
+			#body=$( cat ${blog} | grep BODY | cut -d' ' -f2- )
+			body=$( cat ${blog} | xargs -0 | sed -e 's/[^^]/[&]/g; s/\^/\\^/g; $!a\'$'\n''\\n' | grep -Po "#BODY_START\K(.*?)#BODY_STOP" | sed "s|\ \#BODY_STOP||" | sed "s|^\ ||" )
+			blog_index=$( echo ${btitle} | sed -e "s|\ |-|g" )
+			blog_dir="/blog/${year}/${month}/${nday}"
+			blog_url="${blog_dir}/${blog_index}.html"
+			
+			if [[ ! -d ${OUTPUT}${blog_dir} ]]; then
+				mkdir -p ${OUTPUT}${blog_dir}
+			fi
+
+			cat ${BLOG_IDX_TPL} | sed \
+				-e "s|BLOGTITLE|${btitle}|" \
+				-e "s|CALADAY|${aday}|" \
+				-e "s|CALNDAY|${nday}|" \
+				-e "s|CALMONTH|${month}|" \
+				-e "s|CALYEAR|${year}|" \
+				-e "s|BLOGURL|${blog_url}|" \
+				-e "s|INGRESS|${ingress}|" \
+				-e "s|DATE\ ||" \
+				> ${blog%.*}.idx
+
+			NEW_HEADER=$( cat ${HEADER} | sed -e "s,#title,${btitle}," )
+			echo ${NEW_HEADER} > ${OUTPUT}${blog_url}
+			
+			cat ${BLOG_TPL} | sed \
+				-e "s|BLOGTITLE|${btitle}|" \
+				-e "s|CALADAY|${aday}|" \
+				-e "s|CALNDAY|${nday}|" \
+				-e "s|CALMONTH|${month}|" \
+				-e "s|CALYEAR|${year}|" \
+				-e "s|INGRESS|${ingress}|" \
+				-e 's|BODY|'${body}'|' \
+				-e "s|DATE\ ||" \
+				-e "s|\#title||" \
+				>> ${OUTPUT}${blog_url}
+
+			NEW_FOOTER=$( cat ${FOOTER} | sed -e "s,#updated,${TODAY}," )
+			echo ${NEW_FOOTER} >> ${OUTPUT}${blog_url}
+			html ${blog_url}
+			url ${blog_url}
+			img ${blog_url}
+		done
+				
+}
+
+function blog_index() {
+
+	echo "make_blog"
+	make_blog
+	ls -har blog/*idx |\
+	while read blogs
+	do
+		#echo "while read"
+		cat ${blogs} >> ${OUTPUT}/index.html
+	done
+	html ${1}
+	url ${1}
+	img ${1}
+
+}
+
+function body() {
+
+	html ${1}
+	url ${1}
+	img ${1}
+	cat ${1} | grep -v "\#title=" >> ${OUTPUT}/${1%.*}.html
+
+}
+
+if [[ ! ${1} == "blog" ]]; then
+
+ls -t *tpl |\
+while read t
+do
+	echo "Generating: ${t%.*}.html"
+	header ${t}
+	body ${t}
+	html ${t}
+	url ${t}
+	img ${t}
+	#footer ${t}
+done
+
+echo "Generating: blog"
+blog_index index.idx
+
+ls -t *tpl |\
+while read t
+do
+	echo "Generating: footer for ${t%.*}.html"
+	footer ${t}
+done
+
+else
+	echo "Generating: Blog index file"
+	rm -f blog/index.html
+	ls -har blog/*idx |\
+	while read b
+	do
+		cat ${b} >> blog/index.html
+	done
+	header blog/index.html
+	cat blog/index.html >> ${OUTPUT}/blog/index.html
+	footer blog/index.html
+fi

@@ -1,6 +1,6 @@
 #!/bin/env zsh
 
-# Version 0.4
+# Version 0.5
 
 # License: GPL v2.0 and newer
 
@@ -60,7 +60,7 @@ function exturl() {
 			#echo "EXT_URL_TXT: ${ext_url_txt}"
 			echo ${url_link} |\
 				sed -i -- 's|'${ext_url_dest}'|<a href=\"'${ext_url_dest}'\">|' ${OUTPUT}/${1%.*}.html
-				sed -i -- 's|'${ext_url_txt}'|'${ext_url_txt}'<img alt=\"External site\" src=\"/images/ext-url.png\" width=\"16\"\ /><\/a>|' ${OUTPUT}/${1%.*}.html
+				sed -i -- 's|'${ext_url_txt}'|'${ext_url_txt}'<img alt=\"External site icon\" src=\"/images/ext-url.png\" width=\"16\"\ /><\/a><\!-- EXT_URL where? -->|' ${OUTPUT}/${1%.*}.html
 				sed -i -- "s|#ext\ ||" ${OUTPUT}/${1%.*}.html
 		done
 
@@ -86,34 +86,36 @@ function url() {
 			#echo "INT_URL_TXT: ${url_txt}"
 			echo ${url_link} |\
 				sed -i -- 's|'${url_dest}'|<a href=\"'${url_dest}'\">|' ${OUTPUT}/${1%.*}.html
-				sed -i -- 's|'${url_txt}'|'${url_txt}'<\/a>|' ${OUTPUT}/${1%.*}.html
+				sed -i -- 's|'${url_txt}'|'${url_txt}'<\/a><\!-- Where is THIS? -->|' ${OUTPUT}/${1%.*}.html
 				sed -i -- "s|\#inturl\ ||" ${OUTPUT}/${1%.*}.html
 		done
 
+}
+
+function img() {
+
+	cat ${OUTPUT}/${1%.*}.html | sed "s/\.\ /\.\\n/g" | sed "s/\,/\,\\n/g" | grep -P '(?=.*?showimg)' |\
+		while read img
+		do
+			local get_img
+			local img_link
+			local image
+			local img_alt
+			get_img=$( echo "${img}" | awk '/#showimg/' | cut -d# -f2-)
+			img_link=$( echo ${get_img} | cut -d' ' -f2- )
+			image=$( echo ${img_link} | cut -dÅ -f1 | cut -dÅ -f1- )
+			img_alt=$( echo ${img_link} | cut -dÅ -f2- | cut -dÅ -f1- )
+			echo ${img_link} |\
+				sed -i -- "s|${image}|<img\ src=\"\/images\/${image}\"|" ${OUTPUT}/${1%.*}.html
+				sed -i -- 's|'${img_alt}'|\ alt=\"'${img_alt}'\"\ width=\"500\"\ \/><\!-- IS THIS IT... -->|' ${OUTPUT}/${1%.*}.html
+				sed -i -- "s|\#showimg\ ||" ${OUTPUT}/${1%.*}.html
+		done
 }
 
 function clean_url() {
 
 	sed -i -- "s|Å||g" ${OUTPUT}/${1%.*}.html
 
-}
-
-function img() {
-
-	cat ${OUTPUT}/${1%.*}.html | grep -P '(?=.*?showimg)' |\
-		while read img
-		do
-			get_img=$( echo ${img} | cut -d# -f2-)
-			img_link=$( echo ${get_img} | cut -d' ' -f2- )
-			image=$( echo ${img_link} | cut -dÅ -f1 | cut -dÅ -f1- )
-			alt=$( echo ${img_link} | cut -dÅ -f2- | cut -dÅ -f1- )
-			echo ${img_link} |\
-				sed -i -- "s|${image}|<img\ src=\"\/images\/${image}\"|" ${OUTPUT}/${1%.*}.html
-				sed -i -- "s|${alt}|\ alt=\"${alt}\"\ width=\"500\"\ \/>|" ${OUTPUT}/${1%.*}.html
-				sed -i -- "s|\#showimg\ ||" ${OUTPUT}/${1%.*}.html
-				sed -i -- "s|Å||" ${OUTPUT}/${1%.*}.html
-				sed -i -- "s|Å||" ${OUTPUT}/${1%.*}.html
-		done
 }
 
 function html() {
@@ -160,9 +162,9 @@ function make_blog() {
 				> ${blog%.*}.idx
 
 			if [[ ! $( cat ${blog%.*}.idx | grep \#title ) ]]; then
-				NEW_HEADER=$( cat ${HEADER} | sed -e "s|#pagetitle|Blog|" )
+				NEW_HEADER=$( cat ${HEADER} | sed -e "s|#pagetitle|${btitle}|" )
 			else
-				NEW_HEADER=$( cat ${HEADER} | sed -e "s,#pagetitle,${btitle}," )
+				NEW_HEADER=$( cat ${HEADER} | sed -e "s|#pagetitle|${btitle}|" )
 			fi
 			echo ${NEW_HEADER} > ${OUTPUT}${blog_url}
 			

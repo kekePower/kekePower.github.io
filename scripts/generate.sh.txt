@@ -1,7 +1,5 @@
 #!/bin/env zsh
 
-# Version 0.5
-
 # License: GPL v2.0 and newer
 
 # Script to generate static html files from input
@@ -10,23 +8,24 @@
 # - Body
 # - Footer
 
-OUTPUT=${HOME}/www/html
-HEADER=${HOME}/www/text/a/header.tpl
-FOOTER=${HOME}/www/text/a/footer.tpl
-BLOG_TPL=${HOME}/www/text/a/blog.tpl
-BLOG_IDX_TPL=${HOME}/www/text/a/blog_index.tpl
-TODAY=$( date "+%Y-%m-%d - %T" )
+VERSION="0.5.1"
 root_dir=${HOME}/www/text
+OUTPUT=${HOME}/www/html
+HEADER=${root_dir}/site/header.tpl
+FOOTER=${root_dir}/site/footer.tpl
+BLOG_TPL=${root_dir}/site/blog.tpl
+BLOG_IDX_TPL=${root_dir}/site/blog_index.tpl
+TODAY=$( date "+%Y-%m-%d - %T" )
 
 builtin cd ${root_dir}
 
 function header() {
 
 	if [[ $( grep title ${1} | head -2) ]]; then
-		title=$( cat ${1} | head -2 | grep title | cut -d= -f2 )
-		NEW_HEADER=$( cat ${HEADER} | sed -e "s,#pagetitle,${title}," )
+		title=$( cat ${1} | head -2 | grep \#title | cut -d= -f2 )
+		NEW_HEADER=$( cat ${HEADER} | sed -e "s|#pagetitle|${title}|" )
 	else
-		NEW_HEADER=$( cat ${HEADER} )
+		NEW_HEADER=$( cat ${HEADER} | sed -e "s|#pagetitle|No\ title\ supplied|" )
 	fi
 	echo ${NEW_HEADER} > ${OUTPUT}/${1%.*}.html
 
@@ -34,7 +33,7 @@ function header() {
 
 function footer() {
 
-	NEW_FOOTER=$( cat ${FOOTER} | sed -e "s,#updated,${TODAY}," )
+	NEW_FOOTER=$( cat ${FOOTER} | sed -e "s|#updated|${TODAY}|" | sed -e "s|#version|${VERSION}|" )
 	echo ${NEW_FOOTER} >> ${OUTPUT}/${1%.*}.html
 
 }
@@ -164,7 +163,7 @@ function make_blog() {
 			if [[ ! $( cat ${blog%.*}.idx | grep \#title ) ]]; then
 				NEW_HEADER=$( cat ${HEADER} | sed -e "s|#pagetitle|${btitle}|" )
 			else
-				NEW_HEADER=$( cat ${HEADER} | sed -e "s|#pagetitle|${btitle}|" )
+				NEW_HEADER=$( cat ${HEADER} | sed -e "s|#pagetitle|Blog|" )
 			fi
 			echo ${NEW_HEADER} > ${OUTPUT}${blog_url}
 			
@@ -180,7 +179,8 @@ function make_blog() {
 				-e "s|\#title||" \
 				>> ${OUTPUT}${blog_url}
 
-			NEW_FOOTER=$( cat ${FOOTER} | sed -e "s,#updated,${TODAY}," )
+			NEW_FOOTER=$( cat ${FOOTER} | sed -e "s|#updated|${TODAY}|" | sed -e "s|\#version|${VERSION}|" )
+			echo "Generating: footer for ${blog_url}"
 			echo ${NEW_FOOTER} >> ${OUTPUT}${blog_url}
 			html ${blog_url}
 			url ${blog_url}
@@ -225,8 +225,6 @@ function generate() {
 	clean_url ${1}
 }
 
-if [[ ! ${1} == "blog" ]]; then
-
 if [[ ! ${1} ]]; then
 
 	ls -t *tpl |\
@@ -235,8 +233,21 @@ if [[ ! ${1} ]]; then
 		generate ${t}
 	done
 
+if [[ -d blog ]]; then
 	echo "Generating: blog"
 	blog_index index.idx
+	
+	echo "Generating: Blog index file"
+	rm -f blog/index.html
+	ls -har blog/*idx |\
+	while read b
+	do
+		cat ${b} >> blog/index.html
+	done
+	header blog/index.html
+	cat blog/index.html >> ${OUTPUT}/blog/index.html
+	footer blog/index.html
+fi
 
 	ls -t *tpl |\
 	while read t
@@ -251,17 +262,4 @@ else
 	echo "Generating: footer for ${1%.*}.html"
 	footer ${1}
 
-fi
-
-else
-	echo "Generating: Blog index file"
-	rm -f blog/index.html
-	ls -har blog/*idx |\
-	while read b
-	do
-		cat ${b} >> blog/index.html
-	done
-	header blog/index.html
-	cat blog/index.html >> ${OUTPUT}/blog/index.html
-	footer blog/index.html
 fi

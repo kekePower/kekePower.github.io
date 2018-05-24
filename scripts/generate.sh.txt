@@ -8,7 +8,7 @@
 # - Body
 # - Footer
 
-VERSION="0.5.2"
+VERSION="0.5.3"
 root_dir=${HOME}/www/text
 OUTPUT=${HOME}/www/html
 HEADER=${root_dir}/site/header.tpl
@@ -128,6 +128,10 @@ function html() {
     sed -i -- "s|\#ESTRONG|</strong>|g" ${OUTPUT}/${1%.*}.html
 	sed -i -- "s|\#I|<i>|g" ${OUTPUT}/${1%.*}.html
 	sed -i -- "s|\#EI|<\/i>|g" ${OUTPUT}/${1%.*}.html
+	sed -i -- "s|\#C|<code>|g" ${OUTPUT}/${1%.*}.html
+	sed -i -- "s|\#EC|<\/code>|g" ${OUTPUT}/${1%.*}.html
+	sed -i -- "s|\#EM|<em>|g" ${OUTPUT}/${1%.*}.html
+	sed -i -- "s|\#SEM|<\/em>|g" ${OUTPUT}/${1%.*}.html
 
 }
 
@@ -239,10 +243,10 @@ if [[ -d blog ]]; then
 	
 	echo "Generating: blog index file"
 	rm -f blog/index.html
-	ls -1bt blog/*idx |\
+	ls -1bt blog/*blog |\
 	while read b
 	do
-		cat ${b} >> blog/index.html
+		cat ${b%.*}.idx >> blog/index.html
 	done
 	header blog/index.html
 	cat blog/index.html >> ${OUTPUT}/blog/index.html

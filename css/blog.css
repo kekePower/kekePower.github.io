@@ -8,6 +8,10 @@ div.blog {
 	/* margin-left: 50px; */
 }
 div.blogtitle {
+	/* background: url(/images/round_corner.png) top right no-repeat;
+	background-size: 37px; */
+	border-top-right-radius: 10px;
+	border-bottom-left-radius: 10px;
 	padding: 3px;
 	margin-left: 2.1em;
 	background-color: #444;
@@ -39,6 +43,8 @@ div.blogcontent div.blogingress {
 	height: 5em;
 }
 div.blogbody {
+	border-top-right-radius: 20px;
+	border-bottom-left-radius: 20px;
 	background-color: #222;
 	font-size: 14px;
 	float: left;

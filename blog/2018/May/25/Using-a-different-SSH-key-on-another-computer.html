@@ -2,7 +2,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<title>kekePower - Openbox, the minimalistic window manager, is close to release 3.7</title>
+<title>kekePower - Using a different SSH key on another computer</title>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <link rel="stylesheet" type="text/css" href="/css/dark.css" media="screen" />
 <link rel="stylesheet" type="text/css" href="/css/cal-icon.css" media="screen" />
@@ -30,12 +30,12 @@
 
 <!-- This is the end of the HEADER -->
 <div class="blog">
-<div class="blogtitle">Openbox, the minimalistic window manager, is close to release 3.7</div>
+<div class="blogtitle">Using a different SSH key on another computer</div>
 <div class="blogcontent">
 	<div class="cal-icon">
 		<div class="datetime">
 			<div class="caltop"><p>Tue</p></div>
-				<p class="day">15</p>
+				<p class="day">25</p>
 				<p class="mon">May</p>
 				<p class="yr">2018</p>
 			</div>
@@ -43,10 +43,10 @@
 	</div>
 	<div class="blogingress">
 		<br />
-I have been using Openbox for quite a while and am now running the latest version compiled from a git checkout.
+Sometimes you may not want to add every single SSH key you have to access a remote resource.<br /> I will tell you a good way to use existing keys you can add to your SSH config file.
 	</div>
 	<div class="blogbody">
-<p> Did a git clone from the <a href="http://git.openbox.org/?p=mikachu/openbox.git;a=summary">mikachu work<img alt="External site icon" src="/images/ext-url.png" width="16" /></a><!-- EXT_URL where? --> tree and have been running for the last few days. </p> <br /> Had a little incident, but that was entirely my fault as I only did a <strong>openbox --restart</strong> which resulted in xscreensaver dying but still living in memory. I was unable to unlock the screensaver, so I had to log in remotely and reboot my computer. <br /> <br /> <a href="https://mageia.org/">If you are using<img alt="External site icon" src="/images/ext-url.png" width="16" /></a><!-- EXT_URL where? --> Mageia Linux and want to be on the bleeding edge, you can install Cauldron and stay tuned for <a href="http://openbox.org/">Openbox 3.7<img alt="External site icon" src="/images/ext-url.png" width="16" /></a><!-- EXT_URL where? --> when it lands.
+<p> I wanted to access a remote resource that I only had access to using a key from another computer, so I searched a little and found this solution that works like a charm.<br /> <br /> Add these lines to your <em>~/.ssh/config</em> file and give it a go.<br /> Make sure all the files in the .ssh directory have the 0600 permissions set. <blockquote> <code> Host *.remote.server<br /> User username<br /> IdentityFile ~/.ssh/id_rsa.otherKey<br /> </code> </blockquote> </p>
 	</div>
 </div> <!-- End blog content -->
 

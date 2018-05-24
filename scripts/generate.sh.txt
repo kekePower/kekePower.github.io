@@ -8,7 +8,7 @@
 # - Body
 # - Footer
 
-VERSION="0.5.1"
+VERSION="0.5.2"
 root_dir=${HOME}/www/text
 OUTPUT=${HOME}/www/html
 HEADER=${root_dir}/site/header.tpl
@@ -227,19 +227,19 @@ function generate() {
 
 if [[ ! ${1} ]]; then
 
-	ls -t *tpl |\
+	ls -1bt *tpl |\
 	while read t
 	do
 		generate ${t}
 	done
 
 if [[ -d blog ]]; then
-	echo "Generating: blog"
+	echo "Generating: blog entries"
 	blog_index index.idx
 	
-	echo "Generating: Blog index file"
+	echo "Generating: blog index file"
 	rm -f blog/index.html
-	ls -har blog/*idx |\
+	ls -1bt blog/*idx |\
 	while read b
 	do
 		cat ${b} >> blog/index.html
@@ -249,7 +249,7 @@ if [[ -d blog ]]; then
 	footer blog/index.html
 fi
 
-	ls -t *tpl |\
+	ls -1bt *tpl |\
 	while read t
 	do
 		echo "Generating: footer for ${t%.*}.html"

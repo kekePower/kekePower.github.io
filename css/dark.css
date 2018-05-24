@@ -22,6 +22,8 @@ a {
 }
 
 #header {
+/* background: url(/images/dark_header_bg.png) top right no-repeat;
+background-size: 100px; */
 height: 70px;
 margin: 0;
 padding: 0;
@@ -60,7 +62,9 @@ line-height: 22px;
 	color: #ddd;
 }
 
-#topmenu {  
+#topmenu {
+border-top-right-radius: 10px;
+background-color: #222;
 font: .8em "Trebuchet MS", Verdana, Arial, Helvetica, sans-serif;
 text-align: center;
 background: #444;
@@ -72,7 +76,7 @@ height: 22px;
 #right {
 font: .8em "Trebuchet MS", Verdana, Arial, Helvetica, sans-serif;
 float: right;
-width: 72%;
+width: 82%;
 margin-top: 5px;
 margin-left: 10px;
 color: #f4f4f4;
@@ -82,13 +86,13 @@ height: auto;
 
 #left { 
 font: .8em "Trebuchet MS", Verdana, Arial, Helvetica, sans-serif;
-width: 24%;
+width: 14%;
 padding: 1px;
 line-height: 1.4em; 
 }
 #bottomleft { 
 font: .8em "Trebuchet MS", Verdana, Arial, Helvetica, sans-serif;
-width: 24%;
+width: 16%;
 padding: 1px;
 line-height: 1.4em; 
 }
@@ -120,8 +124,9 @@ line-height: 1.4em;
 	text-align: center;
 	margin-top: 15px;
 	color: #eee;
-	height: 30px;
-	line-height: 30px;
+	height: auto;
+	line-height: 20px;
+	padding: 3px;
 }
 
 blockquote {

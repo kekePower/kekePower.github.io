@@ -56,3 +56,10 @@ div.blogbody {
 	width: 94%;
 }
 
+div.blogbody, img {
+	float:right;
+}
+
+img.exticon {
+	float: none !important;
+}

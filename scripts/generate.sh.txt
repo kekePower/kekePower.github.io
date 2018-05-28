@@ -8,7 +8,7 @@
 # - Body
 # - Footer
 
-VERSION="0.5.3"
+VERSION="0.5.5"
 root_dir=${HOME}/www/text
 OUTPUT=${HOME}/www/html
 HEADER=${root_dir}/site/header.tpl
@@ -16,6 +16,7 @@ FOOTER=${root_dir}/site/footer.tpl
 BLOG_TPL=${root_dir}/site/blog.tpl
 BLOG_IDX_TPL=${root_dir}/site/blog_index.tpl
 TODAY=$( date "+%Y-%m-%d - %T" )
+BLOGDATE=$( date +%a-%Y-%b-%d )
 
 builtin cd ${root_dir}
 
@@ -59,7 +60,7 @@ function exturl() {
 			#echo "EXT_URL_TXT: ${ext_url_txt}"
 			echo ${url_link} |\
 				sed -i -- 's|'${ext_url_dest}'|<a href=\"'${ext_url_dest}'\">|' ${OUTPUT}/${1%.*}.html
-				sed -i -- 's|'${ext_url_txt}'|'${ext_url_txt}'<img alt=\"External site icon\" src=\"/images/ext-url.png\" width=\"16\"\ /><\/a><\!-- EXT_URL where? -->|' ${OUTPUT}/${1%.*}.html
+				sed -i -- 's|'${ext_url_txt}'|'${ext_url_txt}'<img class=\"exticon\" alt=\"External site icon\" src=\"/images/ext-url.png\" width=\"16\"\ /><\/a>|' ${OUTPUT}/${1%.*}.html
 				sed -i -- "s|#ext\ ||" ${OUTPUT}/${1%.*}.html
 		done
 
@@ -85,7 +86,7 @@ function url() {
 			#echo "INT_URL_TXT: ${url_txt}"
 			echo ${url_link} |\
 				sed -i -- 's|'${url_dest}'|<a href=\"'${url_dest}'\">|' ${OUTPUT}/${1%.*}.html
-				sed -i -- 's|'${url_txt}'|'${url_txt}'<\/a><\!-- Where is THIS? -->|' ${OUTPUT}/${1%.*}.html
+				sed -i -- 's|'${url_txt}'|'${url_txt}'<\/a>|' ${OUTPUT}/${1%.*}.html
 				sed -i -- "s|\#inturl\ ||" ${OUTPUT}/${1%.*}.html
 		done
 
@@ -101,12 +102,16 @@ function img() {
 			local image
 			local img_alt
 			get_img=$( echo "${img}" | awk '/#showimg/' | cut -d# -f2-)
+			#echo "GET_IMG: $get_img"
 			img_link=$( echo ${get_img} | cut -d' ' -f2- )
+			#echo "IMG_LINK: $img_link"
 			image=$( echo ${img_link} | cut -dÅ -f1 | cut -dÅ -f1- )
+			#echo "IMAGE: $image"
 			img_alt=$( echo ${img_link} | cut -dÅ -f2- | cut -dÅ -f1- )
+			#echo "IMG_ALT: $img_alt"
 			echo ${img_link} |\
 				sed -i -- "s|${image}|<img\ src=\"\/images\/${image}\"|" ${OUTPUT}/${1%.*}.html
-				sed -i -- 's|'${img_alt}'|\ alt=\"'${img_alt}'\"\ width=\"500\"\ \/><\!-- IS THIS IT... -->|' ${OUTPUT}/${1%.*}.html
+				sed -i -- 's|'${img_alt}'|\ alt=\"'${img_alt}'\"\ width=\"500\"\ \/>|' ${OUTPUT}/${1%.*}.html
 				sed -i -- "s|\#showimg\ ||" ${OUTPUT}/${1%.*}.html
 		done
 }
@@ -132,6 +137,7 @@ function html() {
 	sed -i -- "s|\#EC|<\/code>|g" ${OUTPUT}/${1%.*}.html
 	sed -i -- "s|\#EM|<em>|g" ${OUTPUT}/${1%.*}.html
 	sed -i -- "s|\#SEM|<\/em>|g" ${OUTPUT}/${1%.*}.html
+	sed -i -- "s|\#OT|\&quot;|g" ${OUTPUT}/${1%.*}.html
 
 }
 
@@ -141,11 +147,13 @@ function make_blog() {
 		while read blog
 		do
 			# Array sdate = Name day=4, Year=2, Month=3, Number day=1
+			sed -i "s/GETDATE/${BLOGDATE}/" ${blog}
+			# sed -i "s/\'/\\\'/g" ${blog}
 			sdate=( $( cat ${blog} | grep DATE | sed "s|DATE\ ||" | sed "s|\-|\ |g" ) )
 			btitle=$( cat ${blog} | grep BLOG_TITLE | cut -d' ' -f2- )
-			ingress=$( cat ${blog} | xargs | grep -Po "#INGRESS_START\K(.*?)#INGRESS_STOP" | sed "s/\ \#INGRESS_STOP//" | sed "s/^\ //" )
-			body=$( cat ${blog} | xargs | grep -Po "#BODY_START\K(.*?)#BODY_STOP" | sed "s/\ \#BODY_STOP//" | sed "s/^\ //" )
-			blog_index=$( echo ${btitle} | sed -e "s|\ |-|g" | sed -e "s|\,||g" | sed -e "s|\.||" )
+			ingress=$( cat ${blog} | sed "s/'/\\\'/g" | xargs | grep -Po "#INGRESS_START\K(.*?)#INGRESS_STOP" | sed "s/\ \#INGRESS_STOP//" | sed "s/^\ //" )
+			body=$( cat ${blog} | sed "s/'/\\\'/g" | xargs | grep -Po "#BODY_START\K(.*?)#BODY_STOP" | sed "s/\ \#BODY_STOP//" | sed "s/^\ //" )
+			blog_index=$( echo ${btitle} | sed -e "s|-|_|" | sed -e "s|\ |-|g" | sed -e "s|\,||g" | sed -e "s|\.||" )
 			blog_dir="/blog/${sdate[2]}/${sdate[3]}/${sdate[4]}"
 			blog_url="${blog_dir}/${blog_index}.html"
 			
@@ -187,8 +195,8 @@ function make_blog() {
 			echo "Generating: footer for ${blog_url}"
 			echo ${NEW_FOOTER} >> ${OUTPUT}${blog_url}
 			html ${blog_url}
-			url ${blog_url}
 			img ${blog_url}
+			url ${blog_url}
 			exturl ${blog_url}
 			clean_url ${blog_url}
 		done

@@ -63,3 +63,10 @@ div.blogbody, img {
 img.exticon {
 	float: none !important;
 }
+
+div.blogingress img {
+	width: 100px !important;
+	float: left;
+	padding-right: 5px;
+	padding-bottom: 5px;
+}
